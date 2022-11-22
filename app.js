@@ -17,7 +17,9 @@ app.get("/", (req, res) => {
 });
 
 const usersRoute = require("./routes/users");
+const playgroundsRoute = require("./routes/playgrounds");
 app.use("/api/users/", usersRoute);
+app.use("/api/playgrounds/", playgroundsRoute);
 
 //404 route
 app.use("*", (req, res) => {

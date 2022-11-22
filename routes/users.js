@@ -142,7 +142,7 @@ router.post("/getAll/", auth, async (req, res) => {
 router.post("/register", async (req, res) => {
   try {
     // Get user input
-    const { fullName, email, password, phone, address } = req.body;
+    const { fullName, email, password, phone } = req.body;
 
     // Validate user input
     if (!(email && password && fullName && phone)) {
@@ -159,7 +159,7 @@ router.post("/register", async (req, res) => {
     if (oldUser) {
       return res
         .status(409)
-        .send({ msg: "Email and phone number already exists." });
+        .send({ msg: "Email or phone number already exists." });
     }
 
     //Encrypt user password
@@ -171,7 +171,6 @@ router.post("/register", async (req, res) => {
       phone,
       email: email.toLowerCase(), // sanitize: convert email to lowercase
       password: encryptedPassword,
-      address,
     });
 
     // Create token
@@ -182,9 +181,7 @@ router.post("/register", async (req, res) => {
         fullName,
         role: user.role,
         phone: user.phone,
-        companyName: user.companyName,
         createdAt: user.createdAt,
-        address,
       },
       process.env.TOKEN_KEY,
       {
@@ -199,10 +196,8 @@ router.post("/register", async (req, res) => {
       phone,
       email,
       fullName,
-      companyName: user.companyName,
       role: user.role,
       token: user.token,
-      address,
     });
   } catch (err) {
     console.log(err);
