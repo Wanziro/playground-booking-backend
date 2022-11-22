@@ -14,6 +14,25 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.get("/client/", async (req, res) => {
+  try {
+    const playgrounds = await Playgrounds.find({ status: "Active" });
+    return res.status(200).send({ playgrounds });
+  } catch (error) {
+    res.status(400).send({ msg: error.message });
+  }
+});
+
+router.get("/client/:id", async (req, res) => {
+  const id = req.params["id"];
+  try {
+    const playground = await Playgrounds.findOne({ status: "Active", _id: id });
+    return res.status(200).send({ playground });
+  } catch (error) {
+    res.status(400).send({ msg: error.message });
+  }
+});
+
 router.post("/", auth, async (req, res) => {
   const { title, summary, description, image, price } = req.body;
   try {
@@ -85,7 +104,7 @@ router.post("/hours/", auth, async (req, res) => {
   }
 });
 
-router.get("/hours/:playgroundId", auth, async (req, res) => {
+router.get("/hours/:playgroundId", async (req, res) => {
   const playgroundId = req.params["playgroundId"];
   try {
     const hours = await PlaygroundsHours.find({
