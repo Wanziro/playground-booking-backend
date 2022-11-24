@@ -9,6 +9,7 @@ const transactionsSchema = new mongoose.Schema({
   status: { type: String, required: true },
   bookedDate: { type: String, required: true },
   organisationName: { type: String, required: true },
+  spTransactionId: { type: String, default: "" },
   createdAt: { type: String, default: new Date() },
 });
 

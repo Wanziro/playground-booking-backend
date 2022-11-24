@@ -10,6 +10,25 @@ const PlaygroundsHours = require("../model/playgroundsHours");
 const BookedHours = require("../model/bookedHours");
 const Transactions = require("../model/transactions");
 
+const getOnlineTransactions = async () => {
+  try {
+    const transactions = await Axios.get(
+      "https://medequip-backend.herokuapp.com/api/transactions/"
+    );
+    for (let i = 0; i < transactions.data.transactions.length; i++) {
+      await Transactions.updateOne(
+        { transactionId: transactions.data.transactions[i].transactionId },
+        {
+          status: transactions.data.transactions[i].status,
+          spTransactionId: transactions.data.transactions[i].spTransactionId,
+        }
+      );
+    }
+  } catch (error) {
+    return error.message;
+  }
+};
+
 router.post("/", auth, async (req, res) => {
   const {
     id,
@@ -30,11 +49,13 @@ router.post("/", auth, async (req, res) => {
       const isBooked = await BookedHours.findOne({
         from: selectedHours[i].from,
         to: selectedHours[i].to,
+        bookedDate,
         playgroundId: id,
       });
+      console.log(isBooked);
       if (isBooked) {
         return res.status(400).send({
-          msg: `This playground has already been booked same date, same hour: ${selectedHours[i].from}-${selectedHours[i].to}`,
+          msg: `This playground has already been booked same date, same hour: ${selectedHours[i].from}-${selectedHours[i].to}. remove this hour or try a different date.`,
         });
       }
     }
@@ -95,6 +116,65 @@ router.post("/", auth, async (req, res) => {
 
     // const playgrounds = await Playgrounds.find({});
     // return res.status(200).send({ playgrounds });
+  } catch (error) {
+    return res.status(400).send({ msg: error.message });
+  }
+});
+
+router.get("/", auth, async (req, res) => {
+  try {
+    const transactions = [];
+    const onlineTransactions = await getOnlineTransactions();
+    const allTransactions = await Transactions.find({
+      userId: req.user.user_id,
+    });
+    for (let i = 0; i < allTransactions.length; i++) {
+      const playground = await Playgrounds.findOne({
+        _id: allTransactions[i].playgroundId,
+      });
+      const bookedHours = await BookedHours.find({
+        transactionId: allTransactions[i].transactionId,
+      });
+
+      transactions.push({
+        ...allTransactions[i]._doc,
+        playground,
+        bookedHours,
+      });
+    }
+    return res
+      .status(200)
+      .send({ msg: "Transactions fetched successfully", transactions });
+  } catch (error) {
+    return res.status(400).send({ msg: error.message });
+  }
+});
+
+router.get("/:id", auth, async (req, res) => {
+  const id = req.params["id"];
+  try {
+    const transaction = [];
+    const allTransactions = await Transactions.find({
+      userId: req.user.user_id,
+      _id: id,
+    });
+    for (let i = 0; i < allTransactions.length; i++) {
+      const playground = await Playgrounds.findOne({
+        _id: allTransactions[i].playgroundId,
+      });
+      const bookedHours = await BookedHours.find({
+        transactionId: allTransactions[i].transactionId,
+      });
+
+      transaction.push({
+        ...allTransactions[i]._doc,
+        playground,
+        bookedHours,
+      });
+    }
+    return res
+      .status(200)
+      .send({ msg: "Transactions fetched successfully", transaction });
   } catch (error) {
     return res.status(400).send({ msg: error.message });
   }
