@@ -9,6 +9,7 @@ const Playgrounds = require("../model/playgrounds");
 const PlaygroundsHours = require("../model/playgroundsHours");
 const BookedHours = require("../model/bookedHours");
 const Transactions = require("../model/transactions");
+const Users = require("../model/users");
 
 const getOnlineTransactions = async () => {
   try {
@@ -135,11 +136,41 @@ router.get("/", auth, async (req, res) => {
       const bookedHours = await BookedHours.find({
         transactionId: allTransactions[i].transactionId,
       });
+      const client = await Users.findOne({ _id: allTransactions[i].userId });
 
       transactions.push({
         ...allTransactions[i]._doc,
         playground,
         bookedHours,
+        client,
+      });
+    }
+    return res
+      .status(200)
+      .send({ msg: "Transactions fetched successfully", transactions });
+  } catch (error) {
+    return res.status(400).send({ msg: error.message });
+  }
+});
+
+router.get("/all/", auth, async (req, res) => {
+  try {
+    const transactions = [];
+    await getOnlineTransactions();
+    const allTransactions = await Transactions.find({});
+    for (let i = 0; i < allTransactions.length; i++) {
+      const playground = await Playgrounds.findOne({
+        _id: allTransactions[i].playgroundId,
+      });
+      const bookedHours = await BookedHours.find({
+        transactionId: allTransactions[i].transactionId,
+      });
+      const client = await Users.findOne({ _id: allTransactions[i].userId });
+      transactions.push({
+        ...allTransactions[i]._doc,
+        playground,
+        bookedHours,
+        client,
       });
     }
     return res
