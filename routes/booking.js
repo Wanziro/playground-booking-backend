@@ -156,7 +156,10 @@ router.get("/", auth, async (req, res) => {
 router.get("/all/", auth, async (req, res) => {
   try {
     const transactions = [];
-    await getOnlineTransactions();
+    const printer = req.query["printer"];
+    if (!printer) {
+      await getOnlineTransactions();
+    }
     const allTransactions = await Transactions.find({});
     for (let i = 0; i < allTransactions.length; i++) {
       const playground = await Playgrounds.findOne({
