@@ -14,7 +14,7 @@ const Users = require("../model/users");
 const getOnlineTransactions = async () => {
   try {
     const transactions = await Axios.get(
-      "https://medequip-backend.herokuapp.com/api/transactions/"
+      "https://mobile-mers-backend.onrender.com/api/transactions/"
     );
     for (let i = 0; i < transactions.data.transactions.length; i++) {
       await Transactions.updateOne(
@@ -66,7 +66,7 @@ router.post("/", auth, async (req, res) => {
       const transactionId = trans.data;
       const organizationId = "10fddf2a-0883-41c0-aa6d-74c98ec3b792";
       const description = "payment request with endpoints for playground";
-      const callbackUrl = `https://medequip-backend.herokuapp.com/api/transactions/`;
+      const callbackUrl = `https://mobile-mers-backend.onrender.com/api/transactions/`;
 
       const pay = await Axios.post(
         "https://opay-api.oltranz.com/opay/paymentrequest",
